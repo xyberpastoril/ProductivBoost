@@ -2,15 +2,29 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace BeTimelyProject
 {
     public partial class MainForm : Form
     {
         #region Attributes
+        private const int SW_SHOWNORMAL = 1;
+        private struct WINDOWPLACEMENT
+        {
+            public int length;
+            public int flags;
+            public int showCmd;
+            public Point ptMinPosition;
+            public Point ptMaxPosition;
+            public Rectangle rcNormalPosition;
+        }
+        public Process proc;
+
         private int TaskIndex;
         private Routine CurrentRoutine;
         public List<Task> CurrentRoutineTasks { get; private set; }
@@ -25,6 +39,7 @@ namespace BeTimelyProject
         private Panel Panel_RoutineData;
         private Panel Panel_ActiveRoutine;
         private Timer Timer;
+        private NotifyIcon NotifyIcon;
 
         // Panel_Routines
         private Label Label_RoutinesHeader;
@@ -74,11 +89,41 @@ namespace BeTimelyProject
                 {
                     this.TaskIndex++;
                     this.LoadTask();
+                    this.NotifyIcon.ShowBalloonTip(
+                        10000, // deprecated as of vista
+                        "Next Task Started", 
+                        "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration, 
+                        ToolTipIcon.Info
+                    );
                     if (!IsThereNextTask()) this.Button_SkipNextTask.Enabled = false; 
                 }
                 else
+                {
                     this.StopRoutine();
+                    this.NotifyIcon.ShowBalloonTip(
+                        10000, // deprecated as of vista
+                        "Routine Finished",
+                        "Your routine has just finished. Feel free to take a break or start another one.",
+                        ToolTipIcon.Info
+                    );
+                }
             }
+        }
+
+        // Notification Icon
+        private void NotifyIcon_ShowMainForm(object sender, EventArgs e)
+        {
+            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+            GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
+
+            // 1 - normal, 2 - minimized
+
+            // If application is not on foreground (not focused), switch it to front
+            if (this.proc.MainWindowHandle != GetForegroundWindow())
+                SwitchToThisWindow(this.proc.MainWindowHandle, false);
+            // If timer is minimized, bring it back to the screen
+            if (placement.showCmd == 2)
+                ShowWindow(this.proc.MainWindowHandle, SW_SHOWNORMAL);
         }
 
         // ListBox_Routines
@@ -280,12 +325,11 @@ namespace BeTimelyProject
 
         public MainForm()
         {
-            #region Attributes
-            this.TaskIndex = 0;
-            this.CurrentRoutineTasks = new List<Task>();
-            #endregion
-
             #region Form Properties
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+
+            this.Name = "ProductivBoost";
             this.Size = new Size(640, 360);
             this.MaximizeBox = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -298,14 +342,14 @@ namespace BeTimelyProject
             this.RoutineForm.FormClosing += new FormClosingEventHandler(this.RoutineForm_FormClosing);
             #endregion
 
-            #region Timer
-            this.Timer = new Timer
-            {
-                Interval = 1000,
-                Enabled = false,
-            };
-            this.Timer.Tick += new EventHandler(this.Timer_Tick);
-            #endregion 
+            #region Attributes
+            Process[] procs = Process.GetProcessesByName("ProductivBoost");
+            this.proc = procs[0];
+
+            this.TaskIndex = 0;
+            this.CurrentRoutineTasks = new List<Task>();
+            #endregion
+
 
             ///
             /// Root Controls
@@ -340,6 +384,23 @@ namespace BeTimelyProject
                 Size = new Size(this.Width, this.Height),
             };
             this.Controls.Add(this.Panel_ActiveRoutine);
+
+            // Special Controls
+            this.Timer = new Timer
+            {
+                Interval = 1000,
+                Enabled = false,
+            };
+            this.Timer.Tick += new EventHandler(this.Timer_Tick);
+
+            this.NotifyIcon = new NotifyIcon(this.components)
+            {
+                Text = "ProductivBoost",
+                Visible = true,
+                Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")))
+            };
+            this.NotifyIcon.BalloonTipClicked += new EventHandler(this.NotifyIcon_ShowMainForm);
+            this.NotifyIcon.MouseDoubleClick += new MouseEventHandler(this.NotifyIcon_ShowMainForm);
 
             #endregion
 
@@ -641,6 +702,18 @@ namespace BeTimelyProject
             Color foreColor = (255 - bgDelta < nThreshold) ? Color.Black : Color.White;
             return foreColor;
         }
+        #endregion
+
+        #region DllImport
+        [DllImport("user32.dll")]
+        public static extern void SwitchToThisWindow(IntPtr hWnd, bool turnon);
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
         #endregion
     }
 }
