@@ -13,7 +13,7 @@ namespace BeTimelyProject
         #region Attributes
         private int TaskIndex;
         private Routine CurrentRoutine;
-        private List<Task> CurrentRoutineTasks;
+        public List<Task> CurrentRoutineTasks { get; private set; }
         private Duration CurrentTimer;
         private int h, m, s;
         #endregion
