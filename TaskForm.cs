@@ -19,9 +19,11 @@ namespace BeTimelyProject
         #region Controls
 
         // Root Controls
+        private ColorDialog ColorDialog;
         private Label Label_TaskName;
         public TextBox TextBox_TaskName;
         private GroupBox GroupBox_Duration;
+        private GroupBox GroupBox_Color; // NEW
         private Button Button_Cancel;
         private Button Button_CreateTask;
         private Button Button_UpdateTask;
@@ -33,6 +35,11 @@ namespace BeTimelyProject
         private Label Label_Hours;
         private Label Label_Minutes;
         private Label Label_Seconds;
+
+        // GroupBox_Color
+        private PictureBox PictureBox_Color_Border;
+        private PictureBox PictureBox_Color; // NEW
+        private Button Button_SelectColor; // NEW
 
         #endregion
 
@@ -96,7 +103,8 @@ namespace BeTimelyProject
                             (int)this.NumericUpDown_Hours.Value, 
                             (int)this.NumericUpDown_Minutes.Value, 
                             (int)this.NumericUpDown_Seconds.Value
-                        )
+                        ),
+                        this.PictureBox_Color.BackColor
                     )
                 );
             }
@@ -125,9 +133,20 @@ namespace BeTimelyProject
                         (int)this.NumericUpDown_Hours.Value,
                         (int)this.NumericUpDown_Minutes.Value,
                         (int)this.NumericUpDown_Seconds.Value
-                    )
+                    ),
+                    this.PictureBox_Color.BackColor
                 ));
             }
+        }
+
+        // Button_SelectColor
+        private void Button_SelectColor_Click(object sender, EventArgs e)
+        {
+            this.ColorDialog.Color = this.PictureBox_Color.BackColor;
+            DialogResult colorResult = this.ColorDialog.ShowDialog();
+
+            if(colorResult == DialogResult.OK)
+                this.PictureBox_Color.BackColor = this.ColorDialog.Color;
         }
 
         #endregion
@@ -139,7 +158,7 @@ namespace BeTimelyProject
             #endregion
 
             #region Form Properties
-            this.Size = new Size(480, 260);
+            this.Size = new Size(480, 300);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -153,6 +172,12 @@ namespace BeTimelyProject
             /// Root Controls
             /// 
             #region Root Controls
+
+            // ColorDialog
+            this.ColorDialog = new ColorDialog
+            {
+                Color = SystemColors.Control,
+            };
 
             // Label_TaskName
             this.Label_TaskName = new Label
@@ -179,10 +204,19 @@ namespace BeTimelyProject
             };
             this.Controls.Add(this.GroupBox_Duration);
 
+            // GroupBox_Color
+            this.GroupBox_Color = new GroupBox
+            {
+                Location = new Point(10, 135),
+                Size = new Size(445, 70),
+                Text = "Color"
+            };
+            this.Controls.Add(this.GroupBox_Color);
+
             // Button_Cancel
             this.Button_Cancel = new Button
             {
-                Location = new Point(220, 180),
+                Location = new Point(220, 210),
                 Size = new Size(80, 30),
                 Text = "Cancel",
             };
@@ -192,7 +226,7 @@ namespace BeTimelyProject
             // Button_CreateTask
             this.Button_CreateTask = new Button
             {
-                Location = new Point(305, 180),
+                Location = new Point(305, 210),
                 Size = new Size(150, 30),
                 Text = "Create Task",
             };
@@ -202,7 +236,7 @@ namespace BeTimelyProject
             // Button_UpdateTask
             this.Button_UpdateTask = new Button
             {
-                Location = new Point(305, 180),
+                Location = new Point(305, 210),
                 Size = new Size(150, 30),
                 Text = "Update Task",
             };
@@ -292,6 +326,40 @@ namespace BeTimelyProject
 
             #endregion
 
+            #region GroupBox_Color
+
+            // PictureBox_Color;
+            this.PictureBox_Color = new PictureBox
+            {
+                Location = new Point(10, 25),
+                Size = new Size(30, 30),
+                BackColor = SystemColors.Control,
+                
+            };
+            this.GroupBox_Color.Controls.Add(this.PictureBox_Color);
+
+            // PictureBox_Color_Border
+            this.PictureBox_Color_Border = new PictureBox
+            {
+                Location = new Point(8, 23),
+                Size = new Size(34, 34),
+                BackColor = Color.Black,
+            };
+            this.GroupBox_Color.Controls.Add(this.PictureBox_Color_Border);
+
+
+            // Button_SelectColor;
+            this.Button_SelectColor = new Button
+            {
+                Location = new Point(50, 25),
+                Size = new Size(150, 30),
+                Text = "Select Color",
+            };
+            this.GroupBox_Color.Controls.Add(this.Button_SelectColor);
+            this.Button_SelectColor.Click += new EventHandler(this.Button_SelectColor_Click);
+
+            #endregion
+
             #region Test
             this.Button_UpdateTask.Hide();
             #endregion
@@ -308,6 +376,10 @@ namespace BeTimelyProject
             this.NumericUpDown_Hours.Value = this.h;
             this.NumericUpDown_Minutes.Value = this.m;
             this.NumericUpDown_Seconds.Value = this.s;
+
+            // Set Color to Control
+            this.PictureBox_Color.BackColor = SystemColors.Control;
+
             // Hide Update Task
             this.Button_UpdateTask.Hide();
             this.Button_CreateTask.Show();
@@ -323,6 +395,7 @@ namespace BeTimelyProject
             this.NumericUpDown_Hours.Value = t.Duration.Hours;
             this.NumericUpDown_Minutes.Value = t.Duration.Minutes;
             this.NumericUpDown_Seconds.Value = t.Duration.Seconds;
+            this.PictureBox_Color.BackColor = t.Color;
             this.Button_CreateTask.Hide();
             this.Button_UpdateTask.Show();
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace BeTimelyProject
@@ -9,11 +10,13 @@ namespace BeTimelyProject
         private String ToStringDetails = "{0, -14}{1, -50}";
         public Duration Duration { get; set; }
         public string Name { get; set; }
+        public Color Color { get; set; }
 
-        public Task(string name, Duration duration)
+        public Task(string name, Duration duration, Color color)
         {
             this.Name = name;
             this.Duration = duration;
+            this.Color = color;
         }
 
         public override string ToString()
