@@ -98,8 +98,12 @@ namespace BeTimelyProject
                 this.Label_RoutineName.Text = r.Name;
                 this.Label_TotalNumberOfTasks.Text = "Tasks : " + r.Tasks.Count.ToString();
                 this.Label_TotalDuration.Text = "Total Duration: " + r.GetTotalDuration().ToString();
+
                 this.DataGridView_RoutineTasks.DataSource = r.Tasks;
-                if(r.Tasks.Count < 1)
+                this.DataGridView_RoutineTasks.Columns["Color"].Width = 35;
+                this.DataGridView_RoutineTasks.Columns["Duration"].Width = 70;
+
+                if (r.Tasks.Count < 1)
                 {
                     this.PictureBox_NoTasksAvailable.Show();
                     this.Panel_RoutineTasks.Hide();
@@ -110,6 +114,15 @@ namespace BeTimelyProject
                     this.PictureBox_NoTasksAvailable.Hide();
                     this.Panel_RoutineTasks.Show();
                     this.Button_StartRoutine.Enabled = true;
+
+                    // Add BackColors to Colors Column
+                    for (int i = 0; i < r.Tasks.Count; i++)
+                    {
+                        this.DataGridView_RoutineTasks.Rows[i].Cells[2].Style.BackColor = r.Tasks[i].Color;
+                        this.DataGridView_RoutineTasks.Rows[i].Cells[2].Style.ForeColor = r.Tasks[i].Color;
+                        this.DataGridView_RoutineTasks.Rows[i].Cells[2].Style.SelectionBackColor = r.Tasks[i].Color;
+                        this.DataGridView_RoutineTasks.Rows[i].Cells[2].Style.SelectionForeColor = r.Tasks[i].Color;
+                    }
                 }
             }
         }
