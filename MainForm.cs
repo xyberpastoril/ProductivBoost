@@ -90,7 +90,7 @@ namespace BeTimelyProject
                     this.TaskIndex++;
                     this.LoadTask();
                     this.NotifyIcon.ShowBalloonTip(
-                        30000, 
+                        10000, // deprecated as of vista
                         "Next Task Started", 
                         "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration, 
                         ToolTipIcon.Info
@@ -101,7 +101,7 @@ namespace BeTimelyProject
                 {
                     this.StopRoutine();
                     this.NotifyIcon.ShowBalloonTip(
-                        30000,
+                        10000, // deprecated as of vista
                         "Routine Finished",
                         "Your routine has just finished. Feel free to take a break or start another one.",
                         ToolTipIcon.Info
