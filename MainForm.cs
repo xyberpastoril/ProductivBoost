@@ -518,6 +518,8 @@ namespace BeTimelyProject
                 Location = new Point(115, this.Height - 160),
                 Size = new Size(150, 30),
                 Text = "Pause Routine",
+                BackColor = SystemColors.Control,
+                ForeColor = SystemColors.ControlText,
             };
             this.Panel_ActiveRoutine.Controls.Add(this.Button_PauseRoutine);
             this.Button_PauseRoutine.Click += new EventHandler(this.Button_PauseRoutine_Click);
@@ -529,6 +531,8 @@ namespace BeTimelyProject
                 Location = new Point(115, this.Height - 160),
                 Size = new Size(150, 30),
                 Text = "Resume Routine",
+                BackColor = SystemColors.Control,
+                ForeColor = SystemColors.ControlText,
             };
             this.Panel_ActiveRoutine.Controls.Add(this.Button_ResumeRoutine);
             this.Button_ResumeRoutine.Click += new EventHandler(this.Button_ResumeRoutine_Click);
@@ -540,6 +544,8 @@ namespace BeTimelyProject
                 Location = new Point(275, this.Height - 160),
                 Size = new Size(150, 30),
                 Text = "Skip Next Task",
+                BackColor = SystemColors.Control,
+                ForeColor = SystemColors.ControlText,
             };
             this.Panel_ActiveRoutine.Controls.Add(this.Button_SkipNextTask);
             this.Button_SkipNextTask.Click += new EventHandler(this.Button_SkipNextTask_Click);
@@ -551,6 +557,8 @@ namespace BeTimelyProject
                 Location = new Point(435, this.Height - 160),
                 Size = new Size(80, 30),
                 Text = "Stop",
+                BackColor = SystemColors.Control,
+                ForeColor = SystemColors.ControlText,
             };
             this.Panel_ActiveRoutine.Controls.Add(this.Button_StopRoutine);
             this.Button_StopRoutine.Click += new EventHandler(this.Button_StopRoutine_Click);
@@ -583,6 +591,9 @@ namespace BeTimelyProject
             this.Panel_RoutineData.Show();
             this.Panel_Routines.Show();
 
+            this.BackColor = SystemColors.Window;
+            this.ForeColor = SystemColors.ControlText;
+
             GC.Collect();
         }
 
@@ -592,6 +603,11 @@ namespace BeTimelyProject
             this.CurrentTimer = this.CurrentRoutineTasks[TaskIndex].Duration;
             this.Label_Timer.Text = this.CurrentTimer.ToString();
 
+            // Adjust Color
+            this.BackColor = this.CurrentRoutineTasks[TaskIndex].Color;
+            this.ForeColor = this.IdealTextColor(this.BackColor);
+
+            // Save timer properties (to avoid duration decrease on listbox)
             this.h = this.CurrentTimer.Hours;
             this.m = this.CurrentTimer.Minutes;
             this.s = this.CurrentTimer.Seconds;
@@ -615,6 +631,16 @@ namespace BeTimelyProject
         }
 
         private bool IsThereNextTask() => this.TaskIndex + 1 < this.CurrentRoutineTasks.Count;
+
+        public Color IdealTextColor(Color bg)
+        {
+            int nThreshold = 105;
+            int bgDelta = Convert.ToInt32((bg.R * 0.299) + (bg.G * 0.587) +
+                                          (bg.B * 0.114));
+
+            Color foreColor = (255 - bgDelta < nThreshold) ? Color.Black : Color.White;
+            return foreColor;
+        }
         #endregion
     }
 }
