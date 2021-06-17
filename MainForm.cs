@@ -367,8 +367,9 @@ namespace BeTimelyProject
             {
                 Location = new Point(240, 0),
                 Size = new Size(400, 360),
-                BackColor = Color.Black,
-            };
+                //BackColor = Color.Black,
+                Image = global::ProductivBoost.Properties.Resources.noroutine,
+        };
             this.Controls.Add(this.PictureBox_NoRoutineSelected);
 
             this.Panel_RoutineData = new Panel
@@ -458,7 +459,8 @@ namespace BeTimelyProject
             {
                 Location = new Point(0, 40),
                 Size = new Size(400, 230),
-                BackColor = Color.Black,
+                //BackColor = Color.Black,
+                Image = global::ProductivBoost.Properties.Resources.notask,
             };
             this.Panel_RoutineData.Controls.Add(this.PictureBox_NoTasksAvailable);
 
