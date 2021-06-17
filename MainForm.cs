@@ -287,7 +287,7 @@ namespace BeTimelyProject
             }
             else
             {
-                this.RoutineForm.NoClosePrompt = false; // NEWLY ADDED (For checking)
+                this.RoutineForm.NoClosePrompt = false;
             }
 
             if (showDialog == true)
@@ -311,14 +311,14 @@ namespace BeTimelyProject
             this.ListBox_Routines.Items.Add(r);
             this.ListBox_Routines.SelectedIndex = this.ListBox_Routines.Items.Count - 1;
             this.RoutineForm.Hide();
-            this.RoutineForm.NoClosePrompt = false;
+            //this.RoutineForm.NoClosePrompt = false;
         }
 
         private void RoutineForm_UpdateRoutine(Routine r)
         {
             this.ListBox_Routines.Items[this.ListBox_Routines.SelectedIndex] = r;
             this.RoutineForm.Hide();
-            this.RoutineForm.NoClosePrompt = false;
+            //this.RoutineForm.NoClosePrompt = false;
         }
 
         #endregion
