@@ -12,7 +12,7 @@ namespace BeTimelyProject
     public partial class RoutineForm : Form
     {
         #region Attributes
-        private readonly String TaskToStringDetails = "{0, -13}{1, -50}";
+        private readonly string TaskToStringDetails = "{0, -11}{1, -80}";
         public bool NoClosePrompt;
         #endregion
 
@@ -334,8 +334,8 @@ namespace BeTimelyProject
             this.Label_TasksHeader = new Label
             {
                 Location = new Point(15, 30),
-                Size = new Size(200, 15),
-                Text = String.Format(this.TaskToStringDetails, "Duration", "Task Name"),
+                Size = new Size(300, 15),
+                Text = string.Format(this.TaskToStringDetails, "Duration", "Task Name [Color]"),
             };
             this.GroupBox_Tasks.Controls.Add(this.Label_TasksHeader);
             

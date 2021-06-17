@@ -177,6 +177,9 @@ namespace BeTimelyProject
             this.ColorDialog = new ColorDialog
             {
                 Color = SystemColors.Control,
+                AnyColor = true,
+                SolidColorOnly = true,
+                
             };
 
             // Label_TaskName

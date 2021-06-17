@@ -7,7 +7,7 @@ namespace BeTimelyProject
 {
     public class Task
     {
-        private String ToStringDetails = "{0, -14}{1, -50}";
+        private String ToStringDetails = "{0, -12}{1, -80}";
         public Duration Duration { get; set; }
         public string Name { get; set; }
         public Color Color { get; set; }
@@ -21,7 +21,7 @@ namespace BeTimelyProject
 
         public override string ToString()
         {
-            return String.Format(ToStringDetails, this.Duration.ToString(), this.Name);
+            return String.Format(ToStringDetails, this.Duration.ToString(), this.Name + " " + this.Color.ToString().Substring(6));
         }
     }
 }
