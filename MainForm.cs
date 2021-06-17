@@ -635,6 +635,21 @@ namespace BeTimelyProject
             this.PictureBox_NoRoutineSelected.Show();
 
             this.Button_PauseRoutine.Hide();
+
+            // If there are no routines serialized, generate default one.
+            this.ListBox_Routines.Items.Add(new Routine("Default Pomodoro")
+            {
+                Tasks = new List<Task> {
+                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                    new Task("Long Break", new Duration(0, 30, 0), Color.Orange),
+                }
+            });
             #endregion
 
             //InitializeComponent();
