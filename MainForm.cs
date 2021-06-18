@@ -7,6 +7,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace BeTimelyProject
 {
@@ -24,6 +27,8 @@ namespace BeTimelyProject
             public Rectangle rcNormalPosition;
         }
         public Process proc;
+
+        private BindingList<Routine> Routines;
 
         private int TaskIndex;
         private Routine CurrentRoutine;
@@ -193,11 +198,9 @@ namespace BeTimelyProject
             {
                 int index = this.ListBox_Routines.SelectedIndex;
                 this.ListBox_Routines.ClearSelected();
-                this.ListBox_Routines.Items.RemoveAt(index);
+                this.Routines.RemoveAt(index);
                 
                 if (index == this.ListBox_Routines.Items.Count) index--;
-                if (this.ListBox_Routines.Items.Count != 0)
-                    this.ListBox_Routines.SelectedIndex = index;
             }
         }
 
@@ -308,7 +311,7 @@ namespace BeTimelyProject
         // Receive data from RoutineForm
         private void RoutineForm_CreateRoutine(Routine r)
         {
-            this.ListBox_Routines.Items.Add(r);
+            this.Routines.Add(r);
             this.ListBox_Routines.SelectedIndex = this.ListBox_Routines.Items.Count - 1;
             this.RoutineForm.Hide();
             //this.RoutineForm.NoClosePrompt = false;
@@ -316,7 +319,7 @@ namespace BeTimelyProject
 
         private void RoutineForm_UpdateRoutine(Routine r)
         {
-            this.ListBox_Routines.Items[this.ListBox_Routines.SelectedIndex] = r;
+            this.Routines[this.ListBox_Routines.SelectedIndex] = r;
             this.RoutineForm.Hide();
             //this.RoutineForm.NoClosePrompt = false;
         }
@@ -348,6 +351,7 @@ namespace BeTimelyProject
 
             this.TaskIndex = 0;
             this.CurrentRoutineTasks = new List<Task>();
+            this.Routines = new BindingList<Routine>();
             #endregion
 
 
@@ -423,7 +427,8 @@ namespace BeTimelyProject
                 Location = new Point(10, 40),
                 Size = new Size(220, 240), // minus button later
                 Name = "ListBox_Routines",
-                TabIndex = 1
+                TabIndex = 1,
+                DataSource = this.Routines,
             };
             this.Panel_Routines.Controls.Add(this.ListBox_Routines);
             this.ListBox_Routines.SelectedIndexChanged += new EventHandler(this.ListBox_Routines_SelectedIndexChanged);
@@ -637,7 +642,7 @@ namespace BeTimelyProject
             this.Button_PauseRoutine.Hide();
 
             // If there are no routines serialized, generate default one.
-            this.ListBox_Routines.Items.Add(new Routine("Default Pomodoro")
+            this.Routines.Add(new Routine("Default Pomodoro")
             {
                 Tasks = new List<Task> {
                     new Task("Work", new Duration(0, 25, 0), Color.Maroon),
