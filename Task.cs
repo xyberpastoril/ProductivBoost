@@ -5,6 +5,7 @@ using System.Text;
 
 namespace BeTimelyProject
 {
+    [Serializable]
     public class Task
     {
         private String ToStringDetails = "{0, -12}{1, -80}";

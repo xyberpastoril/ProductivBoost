@@ -4,6 +4,7 @@ using System.Text;
 
 namespace BeTimelyProject
 {
+    [Serializable]
     public class Routine
     {
         public string Name { get; set; }
