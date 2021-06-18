@@ -199,7 +199,8 @@ namespace BeTimelyProject
                 int index = this.ListBox_Routines.SelectedIndex;
                 this.ListBox_Routines.ClearSelected();
                 this.Routines.RemoveAt(index);
-                
+                this.SerializeRoutines();
+
                 if (index == this.ListBox_Routines.Items.Count) index--;
             }
         }
@@ -314,14 +315,14 @@ namespace BeTimelyProject
             this.Routines.Add(r);
             this.ListBox_Routines.SelectedIndex = this.ListBox_Routines.Items.Count - 1;
             this.RoutineForm.Hide();
-            //this.RoutineForm.NoClosePrompt = false;
+            this.SerializeRoutines();
         }
 
         private void RoutineForm_UpdateRoutine(Routine r)
         {
             this.Routines[this.ListBox_Routines.SelectedIndex] = r;
             this.RoutineForm.Hide();
-            //this.RoutineForm.NoClosePrompt = false;
+            this.SerializeRoutines();
         }
 
         #endregion
@@ -348,7 +349,6 @@ namespace BeTimelyProject
             #region Attributes
             Process[] procs = Process.GetProcessesByName("ProductivBoost");
             this.proc = procs[0];
-
             this.TaskIndex = 0;
             this.CurrentRoutineTasks = new List<Task>();
             this.Routines = new BindingList<Routine>();
@@ -641,20 +641,39 @@ namespace BeTimelyProject
 
             this.Button_PauseRoutine.Hide();
 
-            // If there are no routines serialized, generate default one.
-            this.Routines.Add(new Routine("Default Pomodoro")
+            try
             {
-                Tasks = new List<Task> {
-                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
-                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
-                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
-                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
-                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
-                    new Task("Short Break", new Duration(0, 5, 0), Color.Green),
-                    new Task("Work", new Duration(0, 25, 0), Color.Maroon),
-                    new Task("Long Break", new Duration(0, 30, 0), Color.Orange),
-                }
-            });
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream("Routines.bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+                BindingList<Routine> test = (BindingList<Routine>)formatter.Deserialize(stream);
+                // Have to manually populate to list since simply referencing won't work.
+                foreach (Routine r in test)
+                    this.Routines.Add(r);
+                stream.Close();
+            }
+            catch (Exception e)
+            {
+                this.SerializeRoutines();
+            }
+
+            //If there are no routines serialized, generate default one.
+            if (this.Routines.Count == 0)
+            {
+                this.Routines.Add(new Routine("Default Pomodoro")
+                {
+                    Tasks = new List<Task> {
+                        new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                        new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                        new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                        new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                        new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                        new Task("Short Break", new Duration(0, 5, 0), Color.Green),
+                        new Task("Work", new Duration(0, 25, 0), Color.Maroon),
+                        new Task("Long Break", new Duration(0, 30, 0), Color.Orange),
+                    }
+                });
+                this.SerializeRoutines();
+            }
             #endregion
 
             //InitializeComponent();
@@ -723,6 +742,14 @@ namespace BeTimelyProject
 
             Color foreColor = (255 - bgDelta < nThreshold) ? Color.Black : Color.White;
             return foreColor;
+        }
+
+        private void SerializeRoutines()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream("Routines.bin", FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write);
+            formatter.Serialize(stream, this.Routines);
+            stream.Close();
         }
         #endregion
 

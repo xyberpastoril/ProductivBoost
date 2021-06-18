@@ -4,6 +4,7 @@ using System.Text;
 
 namespace BeTimelyProject
 {
+    [Serializable]
     public class Duration
     {
         public int Hours { get; set; }
