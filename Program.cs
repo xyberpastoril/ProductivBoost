@@ -24,6 +24,7 @@ namespace ProductivBoostProject
             e.MainForm.FormClosing += new FormClosingEventHandler(e.MainForm_FormClosing);
 
             Application.Run(e.MainForm);
+            //Application.Run(new SettingsForm());
         }
 
         
