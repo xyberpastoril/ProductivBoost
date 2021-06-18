@@ -19,6 +19,7 @@ namespace BeTimelyProject
 
         // GroupBox_Settings
         private CheckBox CheckBox_SwitchToFront;
+        private Label Label_SwitchToFront;
         private CheckBox CheckBox_PositionOnFront;
         #endregion
 
@@ -44,7 +45,7 @@ namespace BeTimelyProject
         {
             #region Form Properties
             this.Name = "Settings";
-            this.Size = new Size(500, 180);
+            this.Size = new Size(500, 230);
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.StartPosition = FormStartPosition.CenterParent;
             this.MaximizeBox = false;
@@ -57,7 +58,7 @@ namespace BeTimelyProject
             {
                 Text = "Settings",
                 Location = new Point(10, 10),
-                Size = new Size(460, 80),
+                Size = new Size(460, 130),
             };
             this.Controls.Add(this.GroupBox_Settings);
 
@@ -65,7 +66,7 @@ namespace BeTimelyProject
             this.Button_Cancel = new Button
             {
                 Text = "Cancel",
-                Location = new Point(this.Width - 235, 100),
+                Location = new Point(this.Width - 235, 150),
                 Size = new Size(100, 30),
             };
             this.Controls.Add(this.Button_Cancel);
@@ -75,7 +76,7 @@ namespace BeTimelyProject
             this.Button_Save = new Button
             {
                 Text = "Save",
-                Location = new Point(this.Width - 130, 100),
+                Location = new Point(this.Width - 130, 150),
                 Size = new Size(100, 30),
             };
             this.Controls.Add(this.Button_Save);
@@ -93,11 +94,19 @@ namespace BeTimelyProject
             };
             this.GroupBox_Settings.Controls.Add(this.CheckBox_SwitchToFront);
 
+            this.Label_SwitchToFront = new Label
+            {
+                Text = "Leaving this unchecked will use Windows Native Notifications. \nMake sure your device is not in silent mode.",
+                Location = new Point(25, 50),
+                Size = new Size(395, 36),
+            };
+            this.GroupBox_Settings.Controls.Add(this.Label_SwitchToFront);
+
             //private CheckBox CheckBox_PositionOnFront;
             this.CheckBox_PositionOnFront = new CheckBox
             {
                 Text = "Position Application on top of other windows when running a routine.",
-                Location = new Point(10, 50),
+                Location = new Point(10, 90),
                 Size = new Size(420, 18),
             };
             this.GroupBox_Settings.Controls.Add(this.CheckBox_PositionOnFront);

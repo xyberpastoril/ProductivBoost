@@ -98,23 +98,26 @@ namespace BeTimelyProject
                 {
                     this.TaskIndex++;
                     this.LoadTask();
-                    this.NotifyIcon.ShowBalloonTip(
-                        10000, // deprecated as of vista
-                        "Next Task Started", 
-                        "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration, 
-                        ToolTipIcon.Info
-                    );
+                    
+                    if(this.Settings.SwitchToFront)
+                    {
+                        this.SwitchToFront();
+                    }
+                    else
+                    {
+                        this.NotifyIcon.ShowBalloonTip(
+                            10000, // deprecated as of vista
+                            "Next Task Started",
+                            "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration,
+                            ToolTipIcon.Info
+                        );
+                    }
+                    
                     if (!IsThereNextTask()) this.Button_SkipNextTask.Enabled = false; 
                 }
                 else
                 {
                     this.StopRoutine();
-                    this.NotifyIcon.ShowBalloonTip(
-                        10000, // deprecated as of vista
-                        "Routine Finished",
-                        "Your routine has just finished. Feel free to take a break or start another one.",
-                        ToolTipIcon.Info
-                    );
                 }
             }
         }
@@ -122,17 +125,7 @@ namespace BeTimelyProject
         // Notification Icon
         private void NotifyIcon_ShowMainForm(object sender, EventArgs e)
         {
-            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
-            GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
-
-            // 1 - normal, 2 - minimized
-
-            // If application is not on foreground (not focused), switch it to front
-            if (this.proc.MainWindowHandle != GetForegroundWindow())
-                SwitchToThisWindow(this.proc.MainWindowHandle, false);
-            // If timer is minimized, bring it back to the screen
-            if (placement.showCmd == 2)
-                ShowWindow(this.proc.MainWindowHandle, SW_SHOWNORMAL);
+            this.SwitchToFront();
         }
 
         // Button_Settings
@@ -246,6 +239,10 @@ namespace BeTimelyProject
             this.PictureBox_NoRoutineSelected.Hide();
             this.Panel_RoutineData.Hide();
             this.Panel_Routines.Hide();
+
+            // Check Settings
+            if (this.Settings.PositionOnFront)
+                this.TopMost = true;
 
             this.Timer.Start();
         }
@@ -743,6 +740,22 @@ namespace BeTimelyProject
             this.BackColor = SystemColors.Window;
             this.ForeColor = SystemColors.ControlText;
 
+            this.TopMost = false;
+
+            if (this.Settings.SwitchToFront)
+            {
+                this.SwitchToFront();
+            }
+            else
+            {
+                this.NotifyIcon.ShowBalloonTip(
+                    10000, // deprecated as of vista
+                    "Routine Finished",
+                    "Your routine has just finished. Feel free to take a break or start another one.",
+                    ToolTipIcon.Info
+                );
+            }
+
             GC.Collect();
         }
 
@@ -789,6 +802,21 @@ namespace BeTimelyProject
 
             Color foreColor = (255 - bgDelta < nThreshold) ? Color.Black : Color.White;
             return foreColor;
+        }
+
+        private void SwitchToFront()
+        {
+            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+            GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
+
+            // 1 - normal, 2 - minimized
+
+            // If application is not on foreground (not focused), switch it to front
+            if (this.proc.MainWindowHandle != GetForegroundWindow())
+                SwitchToThisWindow(this.proc.MainWindowHandle, false);
+            // If timer is minimized, bring it back to the screen
+            if (placement.showCmd == 2)
+                ShowWindow(this.proc.MainWindowHandle, SW_SHOWNORMAL);
         }
 
         private void SerializeRoutines()
