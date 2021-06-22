@@ -49,6 +49,8 @@ namespace BeTimelyProject
         // Button_Cancel
         private void Button_Cancel_Click(object sender, EventArgs e)
         {
+            // Slightly different implementation of FormClosing.
+
             bool showDialog = false;
 
             // Check if everything is blank
@@ -79,6 +81,7 @@ namespace BeTimelyProject
         // Button_CreateRoutine
         private void Button_CreateRoutine_Click(object sender, EventArgs e)
         {
+            // Prevents Unsaved Dialog from appearing on FormClosing Event
             this.NoClosePrompt = true;
 
             // If Routine Name is blank
@@ -96,6 +99,7 @@ namespace BeTimelyProject
         // Button_UpdateRoutine
         private void Button_UpdateRoutine_Click(object sender, EventArgs e)
         {
+            // Prevents Unsaved Dialog from appearing on FormClosing Event
             this.NoClosePrompt = true;
 
             // If Routine Name is blank

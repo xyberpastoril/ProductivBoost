@@ -13,7 +13,7 @@ namespace BeTimelyProject
     {
         #region Attributes
         public bool NoClosePrompt;
-        private int h, m, s;
+        private int h, m, s; // Stores last saved duration fields
         #endregion
 
         #region Controls
@@ -52,6 +52,8 @@ namespace BeTimelyProject
         // Button_Cancel
         private void Button_Cancel_Click(object sender, EventArgs e)
         {
+            // Slightly different implementation of FormClosing.
+
             bool showDialog = false;
 
             // Check if everything is blank
@@ -95,7 +97,9 @@ namespace BeTimelyProject
                 this.m = (int)this.NumericUpDown_Minutes.Value;
                 this.s = (int)this.NumericUpDown_Seconds.Value;
 
+                // Prevents Unsaved Dialog from appearing on FormClosing Event
                 this.NoClosePrompt = true;
+
                 this.CreateTask(
                     new Task(
                         this.TextBox_TaskName.Text, 
@@ -126,7 +130,9 @@ namespace BeTimelyProject
                 this.m = (int)this.NumericUpDown_Minutes.Value;
                 this.s = (int)this.NumericUpDown_Seconds.Value;
 
+                // Prevents Unsaved Dialog from appearing on FormClosing Event
                 this.NoClosePrompt = true;
+
                 this.UpdateTask(new Task(
                     this.TextBox_TaskName.Text,
                     new Duration(
