@@ -16,6 +16,7 @@ namespace BeTimelyProject
     public partial class MainForm : Form
     {
         #region Attributes
+        // For use on Switching MainForm to Front
         private const int SW_SHOWNORMAL = 1;
         private struct WINDOWPLACEMENT
         {
@@ -34,7 +35,7 @@ namespace BeTimelyProject
         private Routine CurrentRoutine;
         public List<Task> CurrentRoutineTasks { get; private set; }
         private Duration CurrentTimer;
-        private int h, m, s;
+        private int h, m, s; // Storage of current task's duration values (clone)
         #endregion
 
         #region Controls
@@ -84,8 +85,15 @@ namespace BeTimelyProject
         // Timer
         private void Timer_Tick(object sender, EventArgs e)
         {
+            // Ticks the timer, then update the timer label.
             this.CurrentTimer.Tick();
             this.Label_Timer.Text = this.CurrentTimer.ToString();
+
+            // If the timer is fully consumed, restore duration to its original state
+            // then check if there's next task on the routine. Else, the routine
+            // shall stop.
+            // If there's a next task, it shall also check for the following task to
+            // decide whether to disable or not the skip next task button.
             if (this.CurrentTimer.TimeUp)
             {
                 this.RestoreDuration();
@@ -118,6 +126,10 @@ namespace BeTimelyProject
         // Notification Icon
         private void NotifyIcon_ShowMainForm(object sender, EventArgs e)
         {
+            // Allows the MainForm to be switched to the front,
+            // regardless of being minimized, on the back of other windows,
+            // or using a different virtual desktop (For Windows 10)
+
             WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
             GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
 
@@ -134,7 +146,13 @@ namespace BeTimelyProject
         // ListBox_Routines
         private void ListBox_Routines_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(this.ListBox_Routines.SelectedItem == null)
+            // Hide routine data panel if there's no selected item on the listbox
+            // Otherwise, show them along with the selected routine name,
+            // the number of tasks, total duration and its tasks.
+            // If there are no tasks available, it shall show the picturebox
+            // prompting to user to create task to start the routine. (And hide as well
+            // the number of tasks and total duration since its result will be 0)
+            if (this.ListBox_Routines.SelectedItem == null)
             {
                 this.DataGridView_RoutineTasks.DataSource = null;
                 this.Panel_RoutineData.Hide();
@@ -218,16 +236,23 @@ namespace BeTimelyProject
         // Button_StartRoutine
         private void Button_StartRoutine_Click(object sender, EventArgs e)
         {
+            // Resets the Task Index to 0 and sets the current routine.
             this.TaskIndex = 0;
             this.CurrentRoutine = (Routine) this.ListBox_Routines.SelectedItem;
 
+            // Add routine's task to another list (for cloning)
             foreach (Task t in this.CurrentRoutine.Tasks)
                 this.CurrentRoutineTasks.Add(t);
 
+            // Load first task of the CurrentRoutineTasks list. It shall also
+            // check for the next task to whether to disable/enable the skip
+            // next task button.
             this.LoadTask();
             if (!IsThereNextTask()) this.Button_SkipNextTask.Enabled = false;
             else this.Button_SkipNextTask.Enabled = true;
 
+            // Show the active routine panel and hide routine data management panels.
+            // Then start the timer.
             this.Panel_ActiveRoutine.Show();
             this.Button_PauseRoutine.Show();
 
@@ -281,6 +306,8 @@ namespace BeTimelyProject
         
         private void RoutineForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Check if there's a need to open prompt (implemented in RoutineForm).
+
             bool showDialog = false;
 
             if(this.RoutineForm.NoClosePrompt == false)
@@ -682,17 +709,21 @@ namespace BeTimelyProject
         #region Methods
         private void StopRoutine()
         {
+            // Stops the routine and restore current task's duration
             Timer.Stop();
             this.RestoreDuration();
 
+            // Clear Current Routine Tasks and Current Routine
             this.CurrentRoutineTasks.Clear();
             this.CurrentRoutine = null;
 
+            // Hide Active Routine Panel and Show Routine Management Panel
             this.Panel_ActiveRoutine.Hide();
 
             this.Panel_RoutineData.Show();
             this.Panel_Routines.Show();
 
+            // Revert MainForm Background Color
             this.BackColor = SystemColors.Window;
             this.ForeColor = SystemColors.ControlText;
 
