@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using ProductivBoost;
 
 namespace BeTimelyProject
 {
@@ -30,6 +31,7 @@ namespace BeTimelyProject
         public Process proc;
 
         private BindingList<Routine> Routines;
+        private Setting Settings;
 
         private int TaskIndex;
         private Routine CurrentRoutine;
@@ -49,6 +51,7 @@ namespace BeTimelyProject
 
         // Panel_Routines
         private Label Label_RoutinesHeader;
+        private Button Button_Settings; // NEW
         private ListBox ListBox_Routines;
         private Button Button_CreateRoutine;
 
@@ -77,6 +80,7 @@ namespace BeTimelyProject
 
         #region ChildForms
         private RoutineForm RoutineForm;
+        private SettingsForm SettingsForm;
         #endregion
 
         #region Events
@@ -102,23 +106,26 @@ namespace BeTimelyProject
                 {
                     this.TaskIndex++;
                     this.LoadTask();
-                    this.NotifyIcon.ShowBalloonTip(
-                        10000, // deprecated as of vista
-                        "Next Task Started", 
-                        "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration, 
-                        ToolTipIcon.Info
-                    );
+                    
+                    if(this.Settings.SwitchToFront)
+                    {
+                        this.SwitchToFront();
+                    }
+                    else
+                    {
+                        this.NotifyIcon.ShowBalloonTip(
+                            10000, // deprecated as of vista
+                            "Next Task Started",
+                            "Task \"" + this.CurrentRoutineTasks[this.TaskIndex].Name + "\" has started for " + this.CurrentRoutineTasks[this.TaskIndex].Duration,
+                            ToolTipIcon.Info
+                        );
+                    }
+                    
                     if (!IsThereNextTask()) this.Button_SkipNextTask.Enabled = false; 
                 }
                 else
                 {
                     this.StopRoutine();
-                    this.NotifyIcon.ShowBalloonTip(
-                        10000, // deprecated as of vista
-                        "Routine Finished",
-                        "Your routine has just finished. Feel free to take a break or start another one.",
-                        ToolTipIcon.Info
-                    );
                 }
             }
         }
@@ -126,21 +133,14 @@ namespace BeTimelyProject
         // Notification Icon
         private void NotifyIcon_ShowMainForm(object sender, EventArgs e)
         {
-            // Allows the MainForm to be switched to the front,
-            // regardless of being minimized, on the back of other windows,
-            // or using a different virtual desktop (For Windows 10)
+            this.SwitchToFront();
+        }
 
-            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
-            GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
-
-            // 1 - normal, 2 - minimized
-
-            // If application is not on foreground (not focused), switch it to front
-            if (this.proc.MainWindowHandle != GetForegroundWindow())
-                SwitchToThisWindow(this.proc.MainWindowHandle, false);
-            // If timer is minimized, bring it back to the screen
-            if (placement.showCmd == 2)
-                ShowWindow(this.proc.MainWindowHandle, SW_SHOWNORMAL);
+        // Button_Settings
+        private void Button_Settings_Click(object sender, EventArgs e)
+        {
+            this.SettingsForm.SetFields(this.Settings);
+            this.SettingsForm.ShowDialog();
         }
 
         // ListBox_Routines
@@ -261,6 +261,10 @@ namespace BeTimelyProject
             this.Panel_RoutineData.Hide();
             this.Panel_Routines.Hide();
 
+            // Check Settings
+            if (this.Settings.PositionOnFront)
+                this.TopMost = true;
+
             this.Timer.Start();
         }
 
@@ -352,6 +356,14 @@ namespace BeTimelyProject
             this.SerializeRoutines();
         }
 
+        // Receive data from SettingsForm
+        private void SettingsForm_Save(Setting s)
+        {
+            this.Settings = s;
+            this.SettingsForm.Hide();
+            this.SerializeSettings();
+        }
+
         #endregion
 
         public MainForm()
@@ -371,6 +383,9 @@ namespace BeTimelyProject
             this.RoutineForm.CreateRoutine += new RoutineDataSentHandler(this.RoutineForm_CreateRoutine);
             this.RoutineForm.UpdateRoutine += new RoutineDataSentHandler(this.RoutineForm_UpdateRoutine);
             this.RoutineForm.FormClosing += new FormClosingEventHandler(this.RoutineForm_FormClosing);
+
+            this.SettingsForm = new SettingsForm();
+            this.SettingsForm.SaveSettings += new SettingsDataSentHandler(this.SettingsForm_Save);
             #endregion
 
             #region Attributes
@@ -448,6 +463,15 @@ namespace BeTimelyProject
                 Text = "Routines"
             };
             this.Panel_Routines.Controls.Add(this.Label_RoutinesHeader);
+
+            this.Button_Settings = new Button
+            {
+                Text = "Settings",
+                Location = new Point(150, 10),
+                Size = new Size(80, 25),
+            };
+            this.Panel_Routines.Controls.Add(this.Button_Settings);
+            this.Button_Settings.Click += new EventHandler(this.Button_Settings_Click);
 
             this.ListBox_Routines = new ListBox
             {
@@ -668,6 +692,7 @@ namespace BeTimelyProject
 
             this.Button_PauseRoutine.Hide();
 
+            // Load Routines
             try
             {
                 IFormatter formatter = new BinaryFormatter();
@@ -701,6 +726,21 @@ namespace BeTimelyProject
                 });
                 this.SerializeRoutines();
             }
+
+            // Check Settings
+            try
+            {
+                IFormatter formatter = new BinaryFormatter();
+                Stream stream = new FileStream("Settings.bin", FileMode.Open, FileAccess.Read, FileShare.Read);
+                this.Settings = (Setting)formatter.Deserialize(stream);
+                stream.Close();
+            }
+            catch(Exception e)
+            {
+                this.Settings = new Setting();
+                this.SerializeSettings();
+            }
+
             #endregion
 
             //InitializeComponent();
@@ -726,6 +766,22 @@ namespace BeTimelyProject
             // Revert MainForm Background Color
             this.BackColor = SystemColors.Window;
             this.ForeColor = SystemColors.ControlText;
+
+            this.TopMost = false;
+
+            if (this.Settings.SwitchToFront)
+            {
+                this.SwitchToFront();
+            }
+            else
+            {
+                this.NotifyIcon.ShowBalloonTip(
+                    10000, // deprecated as of vista
+                    "Routine Finished",
+                    "Your routine has just finished. Feel free to take a break or start another one.",
+                    ToolTipIcon.Info
+                );
+            }
 
             GC.Collect();
         }
@@ -775,11 +831,37 @@ namespace BeTimelyProject
             return foreColor;
         }
 
+        private void SwitchToFront()
+        {
+            // Allows the MainForm to be switched to the front,
+            // regardless of being minimized, on the back of other windows,
+            // or using a different virtual desktop (For Windows 10)
+            WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+            GetWindowPlacement(this.proc.MainWindowHandle, ref placement);
+
+            // 1 - normal, 2 - minimized
+
+            // If application is not on foreground (not focused), switch it to front
+            if (this.proc.MainWindowHandle != GetForegroundWindow())
+                SwitchToThisWindow(this.proc.MainWindowHandle, false);
+            // If timer is minimized, bring it back to the screen
+            if (placement.showCmd == 2)
+                ShowWindow(this.proc.MainWindowHandle, SW_SHOWNORMAL);
+        }
+
         private void SerializeRoutines()
         {
             IFormatter formatter = new BinaryFormatter();
             Stream stream = new FileStream("Routines.bin", FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write);
             formatter.Serialize(stream, this.Routines);
+            stream.Close();
+        }
+
+        private void SerializeSettings()
+        {
+            IFormatter formatter = new BinaryFormatter();
+            Stream stream = new FileStream("Settings.bin", FileMode.OpenOrCreate, FileAccess.Write, FileShare.Write);
+            formatter.Serialize(stream, this.Settings);
             stream.Close();
         }
         #endregion
